@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Noo Space website
 
-## Getting Started
+## Local development
 
-First, run the development server:
+Use Node.js 22 and npm:
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the site. The app and its npm lockfile are in `website/` at the repository root. Set Cloudflare Workers Builds **Root directory** to `website`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Cloudflare Workers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The app uses OpenNext for Cloudflare Workers. In Workers Builds set:
 
-## Learn More
+- Build command: `npx opennextjs-cloudflare build`
+- Deploy command: `npx opennextjs-cloudflare deploy`
+- Root directory: `website`
+- Build variable: `NODE_VERSION=22`
 
-To learn more about Next.js, take a look at the following resources:
+The Worker runtime needs `nodejs_compat`, configured in `wrangler.jsonc`. The app currently reads no environment variables, so no runtime secrets or application build variables are required.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run `npm run preview` for a local Workers preview, `npm run deploy` to build and deploy, and `npm run verify` to perform a clean install, lint, type-check, case/path audit, and OpenNext build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Case-sensitive filesystems
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set `git config core.ignorecase false` in this checkout so Git records case-only renames correctly. Imports and public asset paths must match their tracked filename casing exactly; `npm run check:case` checks relative module imports and referenced public assets.

@@ -44,7 +44,6 @@ export default function AboutSection() {
   const [active, setActive] = useState(0);
   const [bubbleTransition, setBubbleTransition] = useState<{ from: number; to: number; direction: "left" | "right" } | null>(null);
   const service = SERVICES[active]!;
-  const change = (step: number) => setActive((index) => (index + step + SERVICES.length) % SERVICES.length);
   const swipeServices = (distance: number) => {
     if (Math.abs(distance) <= 40) return;
     const direction = distance > 0 ? "right" : "left";
@@ -104,7 +103,12 @@ export default function AboutSection() {
       astronaut.style.pointerEvents = astronautProgress > 0.98 ? "auto" : "none";
 
       const rightProgress = Math.min(visibleProgress(rightPanel, viewportHeight), astronautProgress);
-      applyReveal(rightPanel, rightProgress);
+      rightPanel.style.opacity = rightProgress.toFixed(3);
+      rightPanel.style.transform = reduceMotion
+        ? "none"
+        : window.innerWidth < 768
+          ? `translateY(${((1 - rightProgress) * 28).toFixed(1)}px)`
+          : `translateX(${((1 - rightProgress) * 42).toFixed(1)}px)`;
       rightPanel.style.pointerEvents = rightProgress > 0.98 ? "auto" : "none";
 
       leftItems.forEach((item, index) => {
@@ -137,7 +141,7 @@ export default function AboutSection() {
         <div className="grid grid-cols-2 gap-3">
           {SERVICE_ICONS[serviceIndex]!.map((icon, iconIndex) => (
             <span key={icon.title} style={{ animationDelay: `${iconIndex * 0.45}s` }} className="service-glass-icon grid size-10 place-items-center rounded-lg border border-white/35 bg-white/15 shadow-[inset_0_1px_8px_rgba(255,255,255,.2)] last:col-span-2 last:mx-auto">
-              <svg viewBox={`0 0 ${icon.width} ${icon.height}`} className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
+              <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
             </span>
           ))}
         </div>
@@ -164,7 +168,7 @@ export default function AboutSection() {
                   <button key={item.name} type="button" onClick={() => setActive(serviceIndex)} aria-label={item.name}
                     className={`flex min-w-0 flex-col items-center rounded-xl px-1.5 pb-1 pt-2 text-center transition ${featured ? "bg-violet-500/15 shadow-[0_0_22px_rgba(168,85,247,.2)]" : "hover:bg-white/[0.04]"}`}>
                     <span className={`${featured ? "size-12" : "size-10"} mb-2 grid place-items-center rounded-full border border-violet-200/40 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,.38),rgba(128,75,194,.24)_40%,rgba(22,13,38,.9)_100%)] shadow-[0_0_18px_rgba(139,92,246,.2)]`}>
-                      <svg viewBox={`0 0 ${icon.width} ${icon.height}`} className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
+                      <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
                     </span>
                     <span className={`line-clamp-2 text-[9px] leading-tight ${featured ? "text-white" : "text-white/65"}`}>{item.name}</span>
                   </button>

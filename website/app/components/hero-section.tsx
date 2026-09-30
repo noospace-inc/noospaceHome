@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Image from "next/image";
 import AsteroidField from "./asteroid-field";
 import LiquidPlanet from "./liquid-planet";
@@ -16,7 +16,16 @@ function FadeText({ text, delay = 0, shine = false }: { text: string; delay?: nu
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [time, setTime] = useState("");
+  const [logoLoaded, setLogoLoaded] = useState(false);
+
+  const reportHeroReady = useCallback(() => {
+    void document.fonts.ready.then(() => {
+      window.requestAnimationFrame(() => {
+        document.documentElement.dataset.heroReady = "true";
+        window.dispatchEvent(new Event("noospace:hero-ready"));
+      });
+    });
+  }, []);
 
   // Force the page itself black — if a global stylesheet/layout has a grid or
   // any other background on <html>/<body>, it can otherwise show through
@@ -51,20 +60,6 @@ export default function HeroSection() {
     return () => window.removeEventListener("mousemove", handleMove);
   }, []);
 
-  useEffect(() => {
-    const update = () =>
-      setTime(
-        new Date().toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: "Asia/Dubai",
-        })
-      );
-    update();
-    const id = setInterval(update, 30000);
-    return () => clearInterval(id);
-  }, []);
-
   // depth helpers: higher depth = moves more with mouse
   const shift = (depth: number, axis: "x" | "y") =>
     (axis === "x" ? mouse.x : mouse.y) * depth;
@@ -74,6 +69,7 @@ export default function HeroSection() {
   const stars = useMemo(() => {
     let seed = 42;
     const rand = () => {
+      // eslint-disable-next-line react-hooks/immutability -- this local PRNG seed is scoped to the memo calculation.
       seed = (seed * 9301 + 49297) % 233280;
       return seed / 233280;
     };
@@ -94,6 +90,7 @@ export default function HeroSection() {
   return (
     <section
       ref={containerRef}
+      id="home"
       aria-label="Hero section"
       className="relative flex min-h-screen w-full flex-col bg-black"
       style={{ backgroundColor: "#000000", overflow: "hidden" }}
@@ -206,7 +203,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      <AsteroidField />
+      <AsteroidField enabled={logoLoaded} onReady={reportHeroReady} />
 
       {/* darkness at the very bottom, deepening the shadow under the planet */}
       <div
@@ -272,6 +269,8 @@ export default function HeroSection() {
             height={40}
             className="hero-tagline-icon"
             style={{ width: "1em", height: "1em", objectFit: "contain", position: "relative", top: "-4px" }}
+            onLoad={() => setLogoLoaded(true)}
+            onError={() => setLogoLoaded(true)}
           />
           <FadeText text="Insight. Aesthetics. Innovation." delay={1750} shine />
         </div>
@@ -281,7 +280,13 @@ export default function HeroSection() {
           className="hero-slogan relative top-[50px] mt-0 font-medium tracking-[0.12em] text-white"
           style={{ fontFamily: "'Staravenue', sans-serif", fontSize: "clamp(20px, 2vw, 30px)", letterSpacing: "0.02em", textShadow: "0 2px 18px rgba(0,0,0,0.9)" }}
         >
-          <FadeText text="STOP BEING FORGETTABLE · START BEING ICONIC." delay={2200} shine />
+          <span className="hero-slogan-desktop">
+            <FadeText text="STOP BEING FORGETTABLE · START BEING ICONIC." delay={2200} />
+          </span>
+          <span className="hero-slogan-mobile">
+            <FadeText text="STOP BEING FORGETTABLE" delay={2200} />
+            <FadeText text="START BEING ICONIC." delay={2350} />
+          </span>
         </p>
 
         <p

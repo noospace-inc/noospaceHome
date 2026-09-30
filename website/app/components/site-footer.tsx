@@ -5,19 +5,19 @@ const groups = [
   {
     title: "Quick links",
     links: [
-      { label: "Home", href: "/" },
+      { label: "Home", href: "/#home" },
       { label: "Projects", href: "/#projects" },
+      { label: "Our process", href: "/#our-steps" },
       { label: "About us", href: "/#about" },
-      { label: "Let’s connect", href: "/#connectus" },
+      { label: "FAQ", href: "/#faq" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "Services", href: "/#connectus" },
+      { label: "Services", href: "/#about" },
       { label: "Our work", href: "/#projects" },
       { label: "Contact us", href: "/#connectus" },
-      { label: "Email us", href: "mailto:noospace.in@gmail.com" },
     ],
   },
   {
@@ -31,15 +31,13 @@ const groups = [
   },
 ];
 
-const socials = ["Instagram", "LinkedIn", "Twitter", "Reddit"];
-
 export default function SiteFooter() {
   return (
     <footer className="relative overflow-hidden bg-[#050607] px-6 pb-6 pt-14 text-white sm:px-10 lg:px-16">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 border-b border-white/10 pb-12 md:grid-cols-[1.5fr_2fr]">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-3" aria-label="Noo Space home">
+            <Link href="/#home" className="inline-flex items-center gap-3" aria-label="Noo Space home">
               <Image src="/logo.png" alt="" width={42} height={42} className="size-10 object-contain" />
               <span className="font-nasalization text-xl tracking-wide">NOO SPACE</span>
             </Link>
@@ -62,13 +60,11 @@ export default function SiteFooter() {
               </nav>
             ))}
             <div>
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80" style={{ fontFamily: "'Staravenue', sans-serif" }}>Social</h2>
-              <ul className="space-y-3">
-                {socials.map((social) => (
-                  <li key={social}>
-                    <span className="text-sm text-white/50">{social}</span>
-                  </li>
-                ))}
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80" style={{ fontFamily: "'Staravenue', sans-serif" }}>Contact</h2>
+              <ul className="space-y-3 text-sm">
+                <li><a className="text-white/50 transition-colors hover:text-white" href="https://www.instagram.com/noospace.in/" target="_blank" rel="noreferrer">Instagram</a></li>
+                <li><a className="break-all text-white/50 transition-colors hover:text-white" href="mailto:noospace.in@gmail.com">noospace.in@gmail.com</a></li>
+                <li><a className="text-white/50 transition-colors hover:text-white" href="tel:+918300249089">+91 83002 49089</a></li>
               </ul>
             </div>
           </div>

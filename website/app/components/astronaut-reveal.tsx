@@ -40,6 +40,7 @@ export default function AstronautReveal() {
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReducedMotionRef.current = mq.matches;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initialize UI from the browser preference.
     setReduceMotion(mq.matches);
 
     const handleChange = () => {
@@ -188,7 +189,7 @@ export default function AstronautReveal() {
 
           {/* Bottom layer: the image revealed underneath */}
           <image
-            href="/projectsecprop/back.png"
+            href="/projectsecprop2/back.webp"
             x={0}
             y={0}
             width={width}
@@ -198,7 +199,7 @@ export default function AstronautReveal() {
 
           {/* Top layer: the cover image, cut away by the ink mask */}
           <image
-            href="/projectsecprop/front.png"
+            href="/projectsecprop2/front.webp"
             x={0}
             y={0}
             width={width}

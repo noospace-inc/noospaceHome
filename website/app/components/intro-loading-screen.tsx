@@ -20,12 +20,35 @@ export default function IntroLoadingScreen() {
 
   useEffect(() => {
     const revealDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 600 : 1400;
-    const revealTimer = window.setTimeout(() => setRevealing(true), 3000);
-    const releaseHeroTimer = window.setTimeout(() => {
-      document.documentElement.removeAttribute("data-intro-pending");
-    }, 3000 + revealDuration + 50);
-    const removeTimer = window.setTimeout(() => setVisible(false), 3000 + revealDuration + 150);
+    let minimumElapsed = false;
+    let heroReady = document.documentElement.dataset.heroReady === "true";
+    let hasStartedReveal = false;
+    let revealTimer = 0;
+    let releaseHeroTimer = 0;
+    let removeTimer = 0;
+
+    const startRevealWhenReady = () => {
+      if (!minimumElapsed || !heroReady || hasStartedReveal) return;
+      hasStartedReveal = true;
+      setRevealing(true);
+      releaseHeroTimer = window.setTimeout(() => {
+        document.documentElement.removeAttribute("data-intro-pending");
+      }, revealDuration + 50);
+      removeTimer = window.setTimeout(() => setVisible(false), revealDuration + 150);
+    };
+    const onHeroReady = () => {
+      heroReady = true;
+      startRevealWhenReady();
+    };
+
+    window.addEventListener("noospace:hero-ready", onHeroReady);
+    revealTimer = window.setTimeout(() => {
+      minimumElapsed = true;
+      startRevealWhenReady();
+    }, 3000);
+    startRevealWhenReady();
     return () => {
+      window.removeEventListener("noospace:hero-ready", onHeroReady);
       window.clearTimeout(revealTimer);
       window.clearTimeout(releaseHeroTimer);
       window.clearTimeout(removeTimer);

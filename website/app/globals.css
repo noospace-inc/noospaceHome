@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Nasalization";
-  src: url("/fonts/Nasalization%20Rg.otf") format("opentype");
+  src: url("/fonts/nasalization-rg.otf") format("opentype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -54,6 +54,10 @@ body :is(h1, h2, h3) {
   color: #FFF0D9 !important;
 }
 
+section :is(h1, h2, h3) {
+  letter-spacing: 2px !important;
+}
+
 html[data-intro-pending="true"] [aria-label="Hero section"],
 html[data-intro-pending="true"] [aria-label="Hero section"] * {
   animation-play-state: paused !important;
@@ -61,6 +65,10 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
 
 .hero-tagline {
   color: #FFF0D9 !important;
+}
+
+.hero-slogan-mobile {
+  display: none;
 }
 
 .hero-basic-fade[data-section-shine].section-shine-visible {
@@ -241,7 +249,7 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
 :root {
   --hero-mobile-noospace-y: 55px;
   --hero-mobile-tagline-y: 170px;
-  --hero-mobile-slogan-y: -950px;
+  --hero-mobile-slogan-y: 130px;
   --hero-mobile-subtitle-y: 135px;
   --hero-mobile-button-y: 115px;
 }
@@ -250,6 +258,8 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
   .hero-wordmark {  position: relative; top: var(--hero-mobile-noospace-y); }
   .hero-tagline { position: relative; top: var(--hero-mobile-tagline-y); }
   .hero-slogan { position: relative; top: var(--hero-mobile-slogan-y); }
+  .hero-slogan-desktop { display: none; }
+  .hero-slogan-mobile { display: flex; flex-direction: column; }
   .hero-subtitle { position: relative; top: var(--hero-mobile-subtitle-y); }
   .hero-cta-button { top: var(--hero-mobile-button-y); }
 }
@@ -259,3 +269,11 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
     transform: translateY(calc(60% - 100px));
   }
 }
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+

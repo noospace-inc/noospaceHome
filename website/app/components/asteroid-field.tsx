@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -33,12 +33,12 @@ type Asteroid = {
   removed: boolean;
 };
 
-export default function AsteroidField() {
+export default function AsteroidField({ enabled, onReady }: { enabled: boolean; onReady: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !enabled) return;
 
     let disposed = false;
     let frame = 0;
@@ -168,7 +168,6 @@ export default function AsteroidField() {
       pointerMoved = false;
 
       const asteroid = findAsteroidAt(event.clientX, event.clientY);
-      // eslint-disable-next-line no-console
       console.log(
         "[AsteroidField] pointerdown at",
         event.clientX,
@@ -244,7 +243,6 @@ export default function AsteroidField() {
       "/3dasset/asteroid.glb",
       (gltf) => {
       if (disposed) return;
-      // eslint-disable-next-line no-console
       console.log("[AsteroidField] model loaded successfully");
 
       const model = gltf.scene;
@@ -294,11 +292,12 @@ export default function AsteroidField() {
       });
 
       resize();
+      onReady();
       },
       undefined,
       (error) => {
-        // eslint-disable-next-line no-console
         console.error("[AsteroidField] FAILED to load /3dasset/asteroid.glb", error);
+        onReady();
       },
     );
 
@@ -368,7 +367,8 @@ export default function AsteroidField() {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, []);
+  }, [enabled, onReady]);
 
   return <div ref={containerRef} aria-hidden="true" className="hero-asteroid-field pointer-events-none absolute inset-0" style={{ zIndex: 4, animation: "hero-rise 1.2s cubic-bezier(0.2, 0.75, 0.25, 1) 0.5s both" }} />;
 }
+

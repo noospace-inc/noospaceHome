@@ -12,14 +12,15 @@ export default function SectionShineObserver() {
     // Keep the hero's existing entrance animation. All other marked headings
     // and taglines follow scroll position in both directions.
     if (heroElements.length && "IntersectionObserver" in window) {
-      heroObserver = new IntersectionObserver((entries) => {
+      const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           entry.target.classList.add("section-shine-visible");
-          heroObserver.unobserve(entry.target);
+          observer.unobserve(entry.target);
         });
       }, { threshold: 0.2 });
-      heroElements.forEach((element) => heroObserver.observe(element));
+      heroObserver = observer;
+      heroElements.forEach((element) => observer.observe(element));
     } else {
       heroElements.forEach((element) => element.classList.add("section-shine-visible"));
     }

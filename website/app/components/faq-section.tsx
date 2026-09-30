@@ -82,13 +82,13 @@ export default function FAQSection() {
   }, []);
 
   return (
-    <section aria-labelledby="faq-heading" className="relative isolate overflow-hidden bg-black px-5 py-20 text-white sm:px-8 sm:py-28">
+    <section id="faq" aria-labelledby="faq-heading" className="relative isolate overflow-hidden bg-black px-5 py-20 text-white sm:px-8 sm:py-28">
       <div aria-hidden="true" className="faq-violet-glow pointer-events-none absolute -right-40 top-[12%] h-[640px] w-[640px] rounded-full opacity-80 blur-[90px]" />
       <div aria-hidden="true" className="faq-magenta-glow pointer-events-none absolute -bottom-64 -left-40 h-[560px] w-[560px] rounded-full opacity-60 blur-[105px]" />
       <div className="relative mx-auto max-w-[900px]">
         <header className="mb-10 text-center sm:mb-14">
           <h2 data-section-shine id="faq-heading" className="text-3xl leading-tight text-white sm:text-4xl" style={{ fontFamily: "Hatolie, sans-serif" }}>
-            Got Questions? We've Got Answers
+            Got Questions? We&apos;ve Got Answers
           </h2>
           <p data-section-shine className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/60 sm:text-base" style={{ fontFamily: "'Staravenue', sans-serif", letterSpacing: "0.02em" }}>
             Clear, honest answers to what most clients ask before getting started.

@@ -21,7 +21,6 @@ const DY = 3.3; // vertical distance between cards on the spiral
 const ANG = 1.25; // angle between neighbouring cards (radians)
 const Y0 = -0.35; // height of the active card
 const LINE_START = 0; // begin the electric line at the top of the section
-const HEADING_FONT = 'Hatolie, sans-serif';
 const BODY_FONT = 'Staravenue, sans-serif';
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -228,6 +227,7 @@ export default function OurSteps() {
     try {
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     } catch {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- WebGL capability is only known after creating the renderer.
       setNoGL(true);
       return;
     }

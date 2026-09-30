@@ -340,7 +340,7 @@ export default function BubbleOrbit({ imageSrc, targetRef, onBubblePop, revealed
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(meshes.filter((_, i) => !popped[i]), false)[0];
       if (!hit) return;
-      const index = meshes.indexOf(hit.object as THREE.Mesh);
+      const index = meshes.indexOf(hit.object as (typeof meshes)[number]);
       if (index < 0 || popped[index]) return;
 
       popped[index] = true;

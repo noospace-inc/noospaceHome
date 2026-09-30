@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, type PointerEvent } from "react";
+import NextImage from "next/image";
 import AstronautReveal from "./astronaut-reveal";
 
 export interface ProjectCardData {
@@ -312,10 +313,11 @@ function ScratchCanvas({
       onPointerCancel={handlePointerUp}
     >
       {/* Revealed behind screenshot */}
-      <img
+      <NextImage
         src={behindSrc}
         alt={`${name} preview`}
-        loading="lazy"
+        fill
+        sizes="(max-width: 640px) 100vw, 50vw"
         className="absolute inset-0 h-full w-full object-cover object-top select-none pointer-events-none"
       />
 
@@ -863,13 +865,13 @@ function ProjectCarousel({ revealProgress }: { revealProgress: number }) {
     <div className="relative z-10 mx-auto w-full max-w-[1320px]">
       <h2
         data-section-shine
-        className="mx-auto max-w-3xl text-center text-xl font-normal leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl"
+        className="mx-auto max-w-3xl text-center text-[45px] font-normal leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl"
         style={{ fontFamily: "Hatolie, sans-serif" }}
       >
         Work That Speaks for Itself
       </h2>
       <p data-section-shine className="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-white/65 sm:text-base" style={{ fontFamily: "'Staravenue', sans-serif", letterSpacing: "0.02em" }}>
-        See how we've helped businesses like yours go online and grow.
+        See how we&apos;ve helped businesses like yours go online and grow.
       </p>
 
       <div

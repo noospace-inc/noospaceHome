@@ -758,7 +758,7 @@ export default function ConnectUsSection() {
         >
           <Image
             ref={foregroundRef}
-            src="/letsconnect2/foreground.webp"
+            src="/letsconnect/foreground.png"
             alt=""
             aria-hidden="true"
             fill
