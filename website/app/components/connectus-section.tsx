@@ -296,6 +296,7 @@ export default function ConnectUsSection() {
   const foregroundLayerRef = useRef<HTMLDivElement>(null);
   const foregroundRef = useRef<HTMLImageElement>(null);
   const glowMountRef = useRef<HTMLDivElement>(null);
+  const mobileBurnRef = useRef<HTMLDivElement>(null);
   const glowProgressRef = useRef(0);
   const backgroundZoomRef = useRef(1.025);
 
@@ -320,6 +321,7 @@ export default function ConnectUsSection() {
     const rightHand = rightHandRef.current;
     const handsWrap = handsWrapRef.current;
     if (!section || !stage || !leftHand || !rightHand || !handsWrap) return;
+    const mobile = isMobile3DDevice();
 
     const positionHand = (image: HTMLElement, layout: HandMotion, progress: number, width: number, height: number) => {
       const x = layout.initial.x + (layout.final.x - layout.initial.x) * progress;
@@ -361,7 +363,35 @@ export default function ConnectUsSection() {
       const zoomEase = zoomProgress * zoomProgress * (3 - 2 * zoomProgress);
       backgroundZoomRef.current = 1.025 + zoomEase * 2.05;
       if (backgroundLayerRef.current) {
-        backgroundLayerRef.current.style.transform = `scale(${backgroundZoomRef.current})`;
+        backgroundLayerRef.current.style.transform = mobile
+          ? `translate3d(0, 0, 0) scale(${backgroundZoomRef.current})`
+          : `scale(${backgroundZoomRef.current})`;
+      }
+      if (mobile) {
+        const foreground = foregroundRef.current;
+        const burn = mobileBurnRef.current;
+        const maxRadius = Math.hypot(stageRect.width / 2, stageRect.height / 2);
+        const edge = -0.45 * stageRect.height + (maxRadius + 0.9 * stageRect.height) * glowProgress;
+        const feather = Math.max(18, stageRect.height * 0.14);
+
+        if (foreground) {
+          const mask = edge <= 0
+            ? "none"
+            : `radial-gradient(circle at 50% 50%, transparent ${Math.max(0, edge)}px, #000 ${edge + feather}px)`;
+          foreground.style.maskImage = mask;
+          foreground.style.setProperty("-webkit-mask-image", mask);
+        }
+
+        if (burn) {
+          if (edge <= 0 || edge >= maxRadius + feather) {
+            burn.style.backgroundImage = "none";
+            burn.style.opacity = "0";
+          } else {
+            const inner = Math.max(0, edge - feather);
+            burn.style.backgroundImage = `radial-gradient(circle at 50% 50%, transparent ${inner}px, rgba(92, 42, 160, .28) ${Math.max(inner + 1, edge - feather * .35)}px, rgba(179, 132, 255, .95) ${edge}px, rgba(132, 76, 218, .68) ${edge + feather * .2}px, transparent ${edge + feather}px)`;
+            burn.style.opacity = String(Math.min(1, glowProgress * 5, (1 - glowProgress) * 5));
+          }
+        }
       }
       if (contactCardRef.current) {
         const reveal = THREE.MathUtils.clamp((glowProgress - 0.9) / 0.1, 0, 1);
@@ -409,10 +439,18 @@ export default function ConnectUsSection() {
     window.addEventListener("scroll", updateProgress, { passive: true });
     document.addEventListener("scroll", updateProgress, { passive: true, capture: true });
     window.addEventListener("resize", updateProgress);
+    if (mobile && window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateProgress);
+      window.visualViewport.addEventListener("scroll", updateProgress);
+    }
     return () => {
       window.removeEventListener("scroll", updateProgress);
       document.removeEventListener("scroll", updateProgress, true);
       window.removeEventListener("resize", updateProgress);
+      if (mobile && window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateProgress);
+        window.visualViewport.removeEventListener("scroll", updateProgress);
+      }
     };
   }, []);
 
@@ -852,6 +890,7 @@ export default function ConnectUsSection() {
             sizes="100vw"
             className="object-cover"
           />
+          <div ref={mobileBurnRef} aria-hidden="true" className="connect-mobile-burn" />
           <div
             ref={glowMountRef}
             aria-hidden="true"

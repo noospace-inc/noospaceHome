@@ -113,6 +113,15 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
   background: rgba(221, 214, 254, .8);
 }
 
+.connect-mobile-burn {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 @keyframes mobile-connect-twinkle {
   from { opacity: .28; }
   to { opacity: .62; }
