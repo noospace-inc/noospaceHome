@@ -24,12 +24,14 @@ export default function IntroLoadingScreen() {
     let heroReady = document.documentElement.dataset.heroReady === "true";
     let hasStartedReveal = false;
     let revealTimer = 0;
+    let heroReadyFallbackTimer = 0;
     let releaseHeroTimer = 0;
     let removeTimer = 0;
 
     const startRevealWhenReady = () => {
       if (!minimumElapsed || !heroReady || hasStartedReveal) return;
       hasStartedReveal = true;
+      window.clearTimeout(heroReadyFallbackTimer);
       setRevealing(true);
       releaseHeroTimer = window.setTimeout(() => {
         document.documentElement.removeAttribute("data-intro-pending");
@@ -45,11 +47,20 @@ export default function IntroLoadingScreen() {
     revealTimer = window.setTimeout(() => {
       minimumElapsed = true;
       startRevealWhenReady();
+      if (!heroReady) {
+        // Avoid leaving the entire site behind the loader if a visual asset or
+        // WebGL setup never reports ready.
+        heroReadyFallbackTimer = window.setTimeout(() => {
+          heroReady = true;
+          startRevealWhenReady();
+        }, 5000);
+      }
     }, 3000);
     startRevealWhenReady();
     return () => {
       window.removeEventListener("noospace:hero-ready", onHeroReady);
       window.clearTimeout(revealTimer);
+      window.clearTimeout(heroReadyFallbackTimer);
       window.clearTimeout(releaseHeroTimer);
       window.clearTimeout(removeTimer);
     };

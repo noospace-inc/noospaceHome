@@ -906,7 +906,7 @@ function ProjectCarousel({ revealProgress }: { revealProgress: number }) {
               }}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              className="project-interactive-card project-deck-card project-card-violet-gradient absolute left-1/2 top-1/2 w-[min(72vw,270px)] overflow-hidden rounded-[28px] border backdrop-blur-xl transition-all duration-300"
+              className="project-interactive-card project-deck-card absolute left-1/2 top-1/2 w-[min(72vw,270px)] overflow-hidden rounded-[28px] border"
               onPointerEnter={(event) => {
                 if (event.pointerType === "mouse") beginProjectCardInteraction(event);
               }}
@@ -924,7 +924,7 @@ function ProjectCarousel({ revealProgress }: { revealProgress: number }) {
                 zIndex: 10 - distance,
                 opacity,
                 pointerEvents: distance > 2 ? "none" : "auto",
-                filter: visualDistance === 0 ? "none" : `blur(${visualDistance * 1.7}px) brightness(${1 - visualDistance * 0.12})`,
+                filter: visualDistance === 0 ? "none" : `brightness(${1 - visualDistance * 0.12})`,
                 borderColor: color.border,
                 backgroundImage: color.surface,
                 boxShadow: hovered
@@ -937,7 +937,7 @@ function ProjectCarousel({ revealProgress }: { revealProgress: number }) {
                   ? "none"
                   : revealProgress < 0.999
                     ? "none"
-                    : "transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 500ms ease, box-shadow 300ms ease, filter 500ms ease",
+                    : "transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 500ms ease",
               }}
             >
               <div

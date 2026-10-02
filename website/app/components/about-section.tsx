@@ -22,7 +22,7 @@ const SERVICE_ICONS: SimpleIcon[][] = [
   [siCpanel, siCloudflare, siWordpress], [siCloudflare, siSelenium, siCypress],
 ];
 
-const SERVICES = [
+export const SERVICES = [
   { name: "Website Development", tagline: "Your business, open online 24/7.", what: "Building a website for your business.", helps: "Customers can find you and trust you.", example: "A clinic site where patients book appointments." },
   { name: "E-commerce Store Development", tagline: "Sell more, from anywhere.", what: "Creating an online shop with payments.", helps: "You can sell products day and night.", example: "A clothing store taking orders online." },
   { name: "Search Engine Optimization (SEO)", tagline: "Be the first result they see.", what: "Improving your site to rank higher on Google.", helps: "More people find you without paying for ads.", example: "A bakery showing up for ‘cakes near me’." },
@@ -140,7 +140,7 @@ export default function AboutSection() {
       <div className="service-glass-bubble flex size-full items-center justify-center rounded-full border border-white/50 shadow-[inset_12px_12px_28px_rgba(255,255,255,.22),inset_-14px_-18px_32px_rgba(86,30,160,.32),0_0_38px_rgba(167,110,255,.3)]">
         <div className="grid grid-cols-2 gap-3">
           {SERVICE_ICONS[serviceIndex]!.map((icon, iconIndex) => (
-            <span key={icon.title} style={{ animationDelay: `${iconIndex * 0.45}s` }} className="service-glass-icon grid size-10 place-items-center rounded-lg border border-white/35 bg-white/15 shadow-[inset_0_1px_8px_rgba(255,255,255,.2)] last:col-span-2 last:mx-auto">
+            <span key={icon.title} style={{ animationDelay: `${iconIndex * 0.45}s` }} className="service-glass-icon grid size-10 place-items-center rounded-lg border border-violet-200/20 bg-violet-300/[0.08] last:col-span-2 last:mx-auto">
               <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
             </span>
           ))}
@@ -167,7 +167,7 @@ export default function AboutSection() {
                 return (
                   <button key={item.name} type="button" onClick={() => setActive(serviceIndex)} aria-label={item.name}
                     className={`flex min-w-0 flex-col items-center rounded-xl px-1.5 pb-1 pt-2 text-center transition ${featured ? "bg-violet-500/15 shadow-[0_0_22px_rgba(168,85,247,.2)]" : "hover:bg-white/[0.04]"}`}>
-                    <span className={`${featured ? "size-12" : "size-10"} mb-2 grid place-items-center rounded-full border border-violet-200/40 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,.38),rgba(128,75,194,.24)_40%,rgba(22,13,38,.9)_100%)] shadow-[0_0_18px_rgba(139,92,246,.2)]`}>
+                    <span className={`${featured ? "size-12" : "size-10"} mb-2 grid place-items-center rounded-full border border-violet-200/30 bg-violet-400/15`}>
                       <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true"><path d={icon.path} fill={`#${icon.hex}`} /></svg>
                     </span>
                     <span className={`line-clamp-2 text-[9px] leading-tight ${featured ? "text-white" : "text-white/65"}`}>{item.name}</span>
@@ -250,13 +250,11 @@ export default function AboutSection() {
       <BubbleOrbit imageSrc={ASTRONAUT_SRC} targetRef={astronautRef} onBubblePop={setActive} revealed />
       <style jsx>{`
         .service-glass-bubble {
-          background: radial-gradient(circle at 28% 22%, rgba(255,255,255,.38), rgba(183,145,255,.18) 28%, rgba(63,35,112,.2) 58%, rgba(14,12,26,.75) 100%);
-          backdrop-filter: blur(2px);
-          animation: service-globe-spin 24s linear infinite;
-          transform-style: preserve-3d;
+          background: rgba(91, 54, 135, .2);
+          border-color: rgba(196, 181, 253, .3);
         }
         .service-glass-icon {
-          animation: service-icon-float 3.2s ease-in-out infinite;
+          animation: none;
         }
         .service-bubble-slide { will-change: transform, opacity; }
         .service-bubble-enter-left { animation: service-bubble-from-left 420ms cubic-bezier(.2,.75,.25,1) both; }

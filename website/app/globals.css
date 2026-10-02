@@ -25,8 +25,8 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -58,9 +58,68 @@ section :is(h1, h2, h3) {
   letter-spacing: 2px !important;
 }
 
+html[data-intro-pending="true"] {
+  overflow: hidden;
+  background: #000;
+}
+
+html[data-intro-pending="true"] body {
+  overflow: hidden;
+  background: #000;
+}
+
+html[data-intro-pending="true"] body > :not(.intro-screen) {
+  visibility: hidden;
+}
+
 html[data-intro-pending="true"] [aria-label="Hero section"],
 html[data-intro-pending="true"] [aria-label="Hero section"] * {
   animation-play-state: paused !important;
+}
+
+.mobile-connect-starfield {
+  display: none;
+}
+
+.mobile-connect-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #e8e3ff;
+  opacity: .42;
+  box-shadow: 0 0 3px rgba(190, 174, 255, .5);
+  animation: mobile-connect-twinkle 3.8s ease-in-out infinite alternate;
+}
+
+.service-options-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, .55) rgba(255, 255, 255, .04);
+}
+
+.service-options-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.service-options-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, .04);
+  border-radius: 9999px;
+}
+
+.service-options-scroll::-webkit-scrollbar-thumb {
+  background: rgba(196, 181, 253, .55);
+  border-radius: 9999px;
+}
+
+.service-options-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(221, 214, 254, .8);
+}
+
+@keyframes mobile-connect-twinkle {
+  from { opacity: .28; }
+  to { opacity: .62; }
+}
+
+@media (max-width: 768px) {
+  .mobile-connect-starfield { display: block; }
 }
 
 .hero-tagline {

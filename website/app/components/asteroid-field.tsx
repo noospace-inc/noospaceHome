@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { canRenderFrame, configureMobileRenderer, handleContextLoss, isMobile3DDevice, lowMemoryDevice } from "./mobile-3d-config";
 
 const ASTEROID_POSITIONS = [
   { top: 80, left: 9, size: 30 },
@@ -39,6 +40,10 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !enabled) return;
+    if (lowMemoryDevice()) {
+      onReady();
+      return;
+    }
 
     let disposed = false;
     let frame = 0;
@@ -51,12 +56,13 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
     camera.position.z = 20;
 
+    const mobile = isMobile3DDevice();
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
-      powerPreference: "low-power",
+      antialias: mobile ? false : true,
+      powerPreference: mobile ? "high-performance" : "low-power",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    configureMobileRenderer(renderer, 1.5);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.className = "block h-full w-full";
@@ -73,6 +79,7 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
     scene.add(rimLight);
 
     const asteroids: Asteroid[] = [];
+    let loadedModel: THREE.Object3D | null = null;
     let draggedAsteroid: Asteroid | null = null;
     let activePointerId: number | null = null;
     let pointerDownX = 0;
@@ -239,13 +246,51 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
     };
 
     const loader = new GLTFLoader();
-    loader.load(
+    const loadModel = () => loader.load(
       "/3dasset/asteroid.glb",
       (gltf) => {
-      if (disposed) return;
+      if (disposed) {
+        gltf.scene.traverse((child) => {
+          if (!(child instanceof THREE.Mesh)) return;
+          child.geometry.dispose();
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((material) => {
+            Object.values(material).forEach((value) => {
+              if (value instanceof THREE.Texture) value.dispose();
+            });
+            material.dispose();
+          });
+        });
+        return;
+      }
       console.log("[AsteroidField] model loaded successfully");
 
       const model = gltf.scene;
+      loadedModel = model;
+      if (mobile) {
+        const resizedImages = new WeakMap<object, HTMLCanvasElement>();
+        model.traverse((child) => {
+          if (!(child instanceof THREE.Mesh)) return;
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((material) => {
+            const candidate = material as THREE.Material & { map?: THREE.Texture | null };
+            const texture = candidate.map;
+            const image = texture?.image as (CanvasImageSource & { width?: number; height?: number }) | undefined;
+            if (!texture || !image || !image.width || !image.height || Math.max(image.width, image.height) <= 1024) return;
+            let resized = resizedImages.get(image as object);
+            if (!resized) {
+              const ratio = 1024 / Math.max(image.width, image.height);
+              resized = document.createElement("canvas");
+              resized.width = Math.max(1, Math.round(image.width * ratio));
+              resized.height = Math.max(1, Math.round(image.height * ratio));
+              resized.getContext("2d")?.drawImage(image, 0, 0, resized.width, resized.height);
+              resizedImages.set(image as object, resized);
+            }
+            texture.image = resized;
+            texture.needsUpdate = true;
+          });
+        });
+      }
       const bounds = new THREE.Box3().setFromObject(model);
       const center = bounds.getCenter(new THREE.Vector3());
       const size = bounds.getSize(new THREE.Vector3());
@@ -300,6 +345,13 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
         onReady();
       },
     );
+    const modelObserver = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      modelObserver.disconnect();
+      loadModel();
+    }, { rootMargin: "600px 0px" });
+    if (mobile) modelObserver.observe(container);
+    else loadModel();
 
     const observer = new ResizeObserver(resize);
     observer.observe(container);
@@ -310,8 +362,23 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
 
     const clock = new THREE.Clock();
     let elapsed = 0;
+    let lastFrame = 0;
+    let inView = !mobile;
+    let repeatedlyLost = false;
+    const contextCleanup = mobile ? handleContextLoss(renderer, () => {
+      repeatedlyLost = true;
+      renderer.domElement.style.display = "none";
+    }) : () => {};
+    const viewportObserver = new IntersectionObserver(([entry]) => {
+      inView = Boolean(entry?.isIntersecting);
+    });
+    if (mobile) viewportObserver.observe(container);
     const animate = () => {
       frame = window.requestAnimationFrame(animate);
+      if (mobile && (!inView || document.hidden || repeatedlyLost)) return;
+      const now = performance.now();
+      if (!canRenderFrame(now, lastFrame, mobile)) return;
+      lastFrame = now;
       const delta = Math.min(clock.getDelta(), 0.05);
       elapsed += delta;
 
@@ -362,8 +429,29 @@ export default function AsteroidField({ enabled, onReady }: { enabled: boolean; 
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
+      modelObserver.disconnect();
+      viewportObserver.disconnect();
+      contextCleanup();
       observer.disconnect();
       asteroids.forEach(({ object }) => scene.remove(object));
+      const geometries = new Set<THREE.BufferGeometry>();
+      const materials = new Set<THREE.Material>();
+      const textures = new Set<THREE.Texture>();
+      loadedModel?.traverse((child) => {
+        if (!(child instanceof THREE.Mesh)) return;
+        geometries.add(child.geometry);
+        const meshMaterials = Array.isArray(child.material) ? child.material : [child.material];
+        meshMaterials.forEach((material) => {
+          materials.add(material);
+          Object.values(material).forEach((value) => {
+            if (value instanceof THREE.Texture) textures.add(value);
+          });
+        });
+      });
+      asteroids.forEach(({ materials: asteroidMaterials }) => asteroidMaterials.forEach((material) => materials.add(material)));
+      geometries.forEach((geometry) => geometry.dispose());
+      materials.forEach((material) => material.dispose());
+      textures.forEach((texture) => texture.dispose());
       renderer.dispose();
       renderer.domElement.remove();
     };

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 import * as THREE from "three";
+import { canRenderFrame, configureMobileRenderer, handleContextLoss, isMobile3DDevice, lowMemoryDevice, MOBILE_CONFIG } from "./mobile-3d-config";
 import {
   siGooglesearchconsole, siSemrush, siLighthouse,
   siKotlin, siSwift, siFlutter,
@@ -198,13 +199,21 @@ export default function BubbleOrbit({ imageSrc, targetRef, onBubblePop, revealed
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
+    const mobile = isMobile3DDevice();
+    // The existing astronaut artwork beneath this decorative orbit is the
+    // low-memory static fallback.
+    if (lowMemoryDevice()) return;
 
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: mobile ? false : true,
+      powerPreference: mobile ? "high-performance" : "default",
+    });
+    configureMobileRenderer(renderer, 2);
     renderer.setClearColor(0x000000, 0);
     const cv = renderer.domElement;
     cv.style.cssText = "width:100%;height:100%;display:block";
@@ -281,7 +290,7 @@ export default function BubbleOrbit({ imageSrc, targetRef, onBubblePop, revealed
     };
     im.src = imageSrc;
 
-    const geo = new THREE.SphereGeometry(1, 48, 32);
+    const geo = new THREE.SphereGeometry(1, mobile ? MOBILE_CONFIG.sphereWidthSegments : 48, mobile ? MOBILE_CONFIG.sphereHeightSegments : 32);
     const meshes = Array.from({ length: COUNT }, (_, i) => {
       const mat = new THREE.ShaderMaterial({
         vertexShader,
@@ -397,8 +406,23 @@ export default function BubbleOrbit({ imageSrc, targetRef, onBubblePop, revealed
     const clock = new THREE.Clock();
     let raf = 0;
     let previousTime = 0;
+    let lastFrame = 0;
+    let inView = !mobile;
+    let repeatedlyLost = false;
+    const contextCleanup = mobile ? handleContextLoss(renderer, () => {
+      repeatedlyLost = true;
+      renderer.domElement.style.display = "none";
+    }) : () => {};
+    const viewportObserver = new IntersectionObserver(([entry]) => {
+      inView = Boolean(entry?.isIntersecting);
+    }, { rootMargin: "400px 0px" });
+    if (mobile) viewportObserver.observe(mount);
     const tick = () => {
       raf = requestAnimationFrame(tick);
+      if (mobile && (!inView || document.hidden || repeatedlyLost)) return;
+      const now = performance.now();
+      if (!canRenderFrame(now, lastFrame, mobile)) return;
+      lastFrame = now;
       const box = measure();
       if (!box || !cw || !ready) return;
       const t = reduceMotion ? 0 : clock.getElapsedTime();
@@ -453,6 +477,8 @@ export default function BubbleOrbit({ imageSrc, targetRef, onBubblePop, revealed
       disposed = true;
       cancelAnimationFrame(raf);
       window.removeEventListener("pointerdown", popBubbleAtPointer);
+      viewportObserver.disconnect();
+      contextCleanup();
       ro.disconnect();
       geo.dispose();
       meshes.forEach((m) => (m.material as THREE.Material).dispose());

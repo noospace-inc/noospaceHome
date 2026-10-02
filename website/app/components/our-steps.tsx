@@ -3,6 +3,7 @@
 // Requires:  npm i three
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { canRenderFrame, configureMobileRenderer, handleContextLoss, isMobile3DDevice, lowMemoryDevice } from "./mobile-3d-config";
 
 const STEPS = [
   { title: "Initial Payment & Kickoff", text: "Once the initial payment is made, we get everything ready to start your project." },
@@ -223,16 +224,29 @@ export default function OurSteps() {
     const canvas = canvasRef.current;
     if (!section || !stage || !canvas) return;
 
+    if (lowMemoryDevice()) {
+      // Keep the section's built-in static content fallback on very low-memory phones.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- device capability is only available in the browser.
+      setNoGL(true);
+      return;
+    }
+
     let renderer: THREE.WebGLRenderer;
+    const mobile = isMobile3DDevice();
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: mobile ? false : true,
+        alpha: true,
+        powerPreference: mobile ? "high-performance" : "default",
+      });
     } catch {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- WebGL capability is only known after creating the renderer.
       setNoGL(true);
       return;
     }
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    configureMobileRenderer(renderer, 2);
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
@@ -313,6 +327,10 @@ export default function OurSteps() {
     const ring = new THREE.Group();
     scene.add(ring);
     const theta = SIZE / RADIUS;
+    const sharedStepGeometry = mobile
+      ? new THREE.CylinderGeometry(RADIUS, RADIUS, SIZE, 32, 1, true, -theta / 2, theta)
+      : null;
+    const stepGeometries = new Set<THREE.BufferGeometry>();
     const cards = STEPS.map((_, i) => {
       const canvasFace = document.createElement("canvas");
       drawFace(canvasFace, i);
@@ -326,8 +344,9 @@ export default function OurSteps() {
         depthWrite: false,
         side: THREE.DoubleSide,
       });
-      const geo = new THREE.CylinderGeometry(RADIUS, RADIUS, SIZE, 48, 1, true, -theta / 2, theta);
-      const mesh = new THREE.Mesh(geo, mat);
+      const geometry = sharedStepGeometry ?? new THREE.CylinderGeometry(RADIUS, RADIUS, SIZE, 48, 1, true, -theta / 2, theta);
+      stepGeometries.add(geometry);
+      const mesh = new THREE.Mesh(geometry, mat);
       ring.add(mesh);
       return { mesh, mat, tex, canvasFace, i };
     });
@@ -354,10 +373,12 @@ export default function OurSteps() {
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(stage);
+    const contextCleanup = mobile ? handleContextLoss(renderer, () => setNoGL(true)) : () => {};
 
     /* loop */
     let raf = 0;
-    let visible = true;
+    let visible = !mobile;
+    let lastFrame = 0;
     let last = performance.now();
     let rot = 0;
     let lp = 0;
@@ -365,6 +386,8 @@ export default function OurSteps() {
 
     const tick = (now: number) => {
       raf = visible ? requestAnimationFrame(tick) : 0;
+      if (!visible || (mobile && document.hidden) || !canRenderFrame(now, lastFrame, mobile)) return;
+      lastFrame = now;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const time = reduce ? 0 : now * 0.001;
@@ -431,7 +454,9 @@ export default function OurSteps() {
       cancelAnimationFrame(raf);
       io.disconnect();
       ro.disconnect();
-      cards.forEach((c) => { c.mesh.geometry.dispose(); c.mat.dispose(); c.tex.dispose(); });
+      contextCleanup();
+      stepGeometries.forEach((geometry) => geometry.dispose());
+      cards.forEach((c) => { c.mat.dispose(); c.tex.dispose(); });
       starGeometry.dispose(); starMaterial.dispose();
       railCore.geometry.dispose(); railHalo.geometry.dispose(); railMats.forEach((m) => m.dispose());
       headTex.dispose(); headMat.dispose();

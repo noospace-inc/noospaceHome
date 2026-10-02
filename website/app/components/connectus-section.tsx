@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import * as THREE from "three";
+import { SERVICES } from "./about-section";
+import { canRenderFrame, configureMobileRenderer, handleContextLoss, isMobile3DDevice } from "./mobile-3d-config";
 
 const STAR_VERTEX = /* glsl */ `
   attribute float aSize;
@@ -168,6 +170,16 @@ const IMAGE_PARALLAX = {
   clickScale: 0.025,
 };
 
+const MOBILE_UNIVERSE_STARS = Array.from({ length: 80 }, (_, index) => {
+  const seed = index + 1;
+  return {
+    left: `${(seed * 61.803) % 100}%`,
+    top: `${(seed * 37.719) % 100}%`,
+    size: seed % 17 === 0 ? 2.5 : seed % 4 === 0 ? 1.75 : 1.25,
+    delay: `${((seed * 13) % 50) / 10}s`,
+  };
+});
+
 type HandMotion = {
   initial: { x: number; y: number; rotation: number };
   final: { x: number; y: number; rotation: number };
@@ -269,6 +281,7 @@ function makeCoreGlow() {
 export default function ConnectUsSection() {
   const [selectedService, setSelectedService] = useState("");
   const [serviceMenuOpen, setServiceMenuOpen] = useState(false);
+  const [sceneNearViewport, setSceneNearViewport] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const mountRef = useRef<HTMLDivElement>(null);
@@ -285,6 +298,20 @@ export default function ConnectUsSection() {
   const glowMountRef = useRef<HTMLDivElement>(null);
   const glowProgressRef = useRef(0);
   const backgroundZoomRef = useRef(1.025);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    if (!isMobile3DDevice()) {
+      setSceneNearViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) setSceneNearViewport(true);
+    }, { rootMargin: "700px 0px" });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -390,12 +417,18 @@ export default function ConnectUsSection() {
   }, []);
 
   useEffect(() => {
+    if (!sceneNearViewport || isMobile3DDevice()) return;
     const mount = glowMountRef.current;
     const foreground = foregroundRef.current;
     if (!mount) return;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    const mobile = isMobile3DDevice();
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: mobile ? false : false,
+      powerPreference: mobile ? "high-performance" : "default",
+    });
+    configureMobileRenderer(renderer, 1.75);
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.style.cssText = "display:block;width:100%;height:100%";
     mount.appendChild(renderer.domElement);
@@ -455,9 +488,22 @@ export default function ConnectUsSection() {
 
     const clock = new THREE.Clock();
     let frame = 0;
+    let lastFrame = 0;
+    let inView = false;
+    const contextCleanup = mobile ? handleContextLoss(renderer, () => {
+      renderer.domElement.style.display = "none";
+      if (foreground) foreground.style.visibility = "visible";
+    }) : () => {};
+    const viewportObserver = new IntersectionObserver(([entry]) => {
+      inView = Boolean(entry?.isIntersecting);
+    }, { rootMargin: "200px 0px" });
+    if (mobile) viewportObserver.observe(sectionRef.current!);
     const animate = () => {
       frame = window.requestAnimationFrame(animate);
-      if (!ready) return;
+      if (!ready || (mobile && (!inView || document.hidden))) return;
+      const now = performance.now();
+      if (!canRenderFrame(now, lastFrame, mobile)) return;
+      lastFrame = now;
       uniforms.uProgress.value = glowProgressRef.current;
       uniforms.uTime.value = clock.getElapsedTime();
       renderer.render(scene, camera);
@@ -467,6 +513,8 @@ export default function ConnectUsSection() {
     return () => {
       disposed = true;
       window.cancelAnimationFrame(frame);
+      viewportObserver.disconnect();
+      contextCleanup();
       resizeObserver.disconnect();
       geometry.dispose();
       material.dispose();
@@ -475,9 +523,10 @@ export default function ConnectUsSection() {
       renderer.domElement.remove();
       if (foreground) foreground.style.visibility = "visible";
     };
-  }, []);
+  }, [sceneNearViewport]);
 
   useEffect(() => {
+    if (!sceneNearViewport || isMobile3DDevice()) return;
     const mount = mountRef.current;
     const backgroundLayer = backgroundLayerRef.current;
     const foregroundLayer = foregroundLayerRef.current;
@@ -485,8 +534,13 @@ export default function ConnectUsSection() {
     const rightHandDepth = rightHandDepthRef.current;
     if (!mount) return;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    const mobile = isMobile3DDevice();
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: mobile ? false : true,
+      powerPreference: mobile ? "high-performance" : "default",
+    });
+    configureMobileRenderer(renderer, 1.75);
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.style.cssText = "display:block;width:100%;height:100%";
     mount.appendChild(renderer.domElement);
@@ -515,7 +569,7 @@ export default function ConnectUsSection() {
     const core = makeCoreGlow();
     galaxy.add(core.sprite);
     const coreSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.19, 24, 24),
+      new THREE.SphereGeometry(0.19, mobile ? 16 : 24, mobile ? 16 : 24),
       new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false }),
     );
     galaxy.add(coreSphere);
@@ -569,8 +623,23 @@ export default function ConnectUsSection() {
     const clock = new THREE.Clock();
     let elapsedTime = 0;
     let frame = 0;
+    let lastFrame = 0;
+    let inView = false;
+    let repeatedlyLost = false;
+    const contextCleanup = mobile ? handleContextLoss(renderer, () => {
+      repeatedlyLost = true;
+      renderer.domElement.style.display = "none";
+    }) : () => {};
+    const viewportObserver = new IntersectionObserver(([entry]) => {
+      inView = Boolean(entry?.isIntersecting);
+    }, { rootMargin: "200px 0px" });
+    if (mobile) viewportObserver.observe(sectionRef.current!);
     const animate = () => {
       frame = window.requestAnimationFrame(animate);
+      if (mobile && (!inView || document.hidden || repeatedlyLost)) return;
+      const now = performance.now();
+      if (!canRenderFrame(now, lastFrame, mobile)) return;
+      lastFrame = now;
       const delta = Math.min(clock.getDelta(), 0.05);
       if (!reduceMotion) {
         elapsedTime += delta;
@@ -611,6 +680,8 @@ export default function ConnectUsSection() {
 
     return () => {
       window.cancelAnimationFrame(frame);
+      viewportObserver.disconnect();
+      contextCleanup();
       window.removeEventListener("pointermove", updatePointer);
       window.removeEventListener("pointerdown", pulseOnClick);
       resizeObserver.disconnect();
@@ -625,7 +696,7 @@ export default function ConnectUsSection() {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, []);
+  }, [sceneNearViewport]);
 
   return (
     <section
@@ -637,6 +708,21 @@ export default function ConnectUsSection() {
     >
       <div ref={stageRef} className="sticky top-0 h-screen w-full overflow-hidden bg-black">
         <div ref={mountRef} aria-hidden="true" className="absolute inset-0" />
+        <div aria-hidden="true" className="mobile-connect-starfield pointer-events-none absolute inset-0 z-[1]">
+          {MOBILE_UNIVERSE_STARS.map((star, index) => (
+            <i
+              key={index}
+              className="mobile-connect-star"
+              style={{
+                left: star.left,
+                top: star.top,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                animationDelay: star.delay,
+              }}
+            />
+          ))}
+        </div>
         <div
           ref={backgroundLayerRef}
           aria-hidden="true"
@@ -663,7 +749,7 @@ export default function ConnectUsSection() {
         </div>
         <div
           ref={contactCardRef}
-          className="absolute left-1/2 top-1/2 z-40 max-h-[92vh] w-[min(92vw,1200px)] overflow-x-hidden overflow-y-auto text-white opacity-0"
+          className="absolute left-1/2 top-1/2 z-40 w-[min(92vw,1200px)] overflow-visible text-white opacity-0"
           style={{ transform: "translate(-50%, -50%) scale(.96)", transition: "opacity 120ms linear", pointerEvents: "none" }}
         >
           <div className="grid min-w-0 gap-10 md:grid-cols-[0.95fr_1.05fr] md:gap-14 lg:gap-20">
@@ -714,10 +800,10 @@ export default function ConnectUsSection() {
                     <span aria-hidden="true" className="text-white/70">v</span>
                   </button>
                   {serviceMenuOpen && (
-                    <ul role="listbox" aria-labelledby="connect-service-label" className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-violet-200/30 bg-[#17131a]/95 py-1 shadow-[0_12px_36px_rgba(0,0,0,.55)] backdrop-blur-xl">
-                      {["Brand identity", "Web design & development", "Creative direction", "Something else"].map((service) => (
-                        <li key={service} role="option" aria-selected={selectedService === service}>
-                          <button type="button" onClick={() => { setSelectedService(service); setServiceMenuOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm text-white/85 transition hover:bg-white/10 hover:text-white" style={{ fontFamily: "'Staravenue', sans-serif" }}>{service}</button>
+                    <ul role="listbox" aria-labelledby="connect-service-label" className="service-options-scroll absolute left-0 right-0 top-full z-50 mt-2 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain rounded-lg border border-violet-200/30 bg-[#17131a]/95 py-1 shadow-[0_12px_36px_rgba(0,0,0,.55)] backdrop-blur-xl">
+                      {SERVICES.map(({ name }) => (
+                        <li key={name} role="option" aria-selected={selectedService === name}>
+                          <button type="button" onClick={() => { setSelectedService(name); setServiceMenuOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm text-white/85 transition hover:bg-white/10 hover:text-white" style={{ fontFamily: "'Staravenue', sans-serif" }}>{name}</button>
                         </li>
                       ))}
                     </ul>
