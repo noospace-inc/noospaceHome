@@ -812,9 +812,8 @@ export default function ConnectUsSection() {
                   const name = String(data.get("name") ?? "");
                   const service = String(data.get("service") ?? "");
                   const message = String(data.get("message") ?? "");
-                  const subject = encodeURIComponent(`Project enquiry from ${name}`);
-                  const body = encodeURIComponent(`Name: ${name}\nService: ${service}\n\n${message}`);
-                  window.location.href = `mailto:hello@noospace.com?subject=${subject}&body=${body}`;
+                  const body = encodeURIComponent(`Hi!, i'm ${name}, i am looking for ${service} service and ${message}`);
+                  window.location.href = `https://wa.me/918300249089?text=${body}`;
                 }}
               >
                 <input type="text" name="website" autoComplete="off" tabIndex={-1} aria-hidden="true" hidden />
