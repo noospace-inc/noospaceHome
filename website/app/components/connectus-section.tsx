@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import * as THREE from "three";
+import { siGmail, siWhatsapp } from "simple-icons";
 import { SERVICES } from "./about-section";
 import { canRenderFrame, configureMobileRenderer, handleContextLoss, isMobile3DDevice } from "./mobile-3d-config";
 
@@ -281,6 +283,7 @@ function makeCoreGlow() {
 export default function ConnectUsSection() {
   const [selectedService, setSelectedService] = useState("");
   const [serviceMenuOpen, setServiceMenuOpen] = useState(false);
+  const [contactEnquiry, setContactEnquiry] = useState<{ name: string; service: string; message: string } | null>(null);
   const [sceneNearViewport, setSceneNearViewport] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -812,8 +815,7 @@ export default function ConnectUsSection() {
                   const name = String(data.get("name") ?? "");
                   const service = String(data.get("service") ?? "");
                   const message = String(data.get("message") ?? "");
-                  const body = encodeURIComponent(`Hi!, i'm ${name}, i am looking for ${service} service and ${message}`);
-                  window.location.href = `https://wa.me/918300249089?text=${body}`;
+                  setContactEnquiry({ name, service, message });
                 }}
               >
                 <input type="text" name="website" autoComplete="off" tabIndex={-1} aria-hidden="true" hidden />
@@ -856,6 +858,43 @@ export default function ConnectUsSection() {
                   </button>
                 </div>
               </form>
+              {contactEnquiry && createPortal((
+                <div
+                  className="fixed inset-0 z-[100] grid place-items-center bg-black/65 p-5 backdrop-blur-sm"
+                  onMouseDown={(event) => { if (event.target === event.currentTarget) setContactEnquiry(null); }}
+                >
+                  <div role="dialog" aria-modal="true" aria-labelledby="contact-choice-title" className="w-full max-w-sm rounded-xl border border-white/25 bg-[#17131a] p-7 text-white shadow-2xl">
+                    <h3 id="contact-choice-title" className="text-center text-xl uppercase tracking-[0.12em]" style={{ fontFamily: "'Staravenue', sans-serif" }}>Choose one</h3>
+                    <div className="mt-7 grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const body = encodeURIComponent(`Hi!, i'm ${contactEnquiry.name}, i am looking for ${contactEnquiry.service} service and ${contactEnquiry.message}`);
+                          window.location.href = `https://wa.me/918300249089?text=${body}`;
+                          setContactEnquiry(null);
+                        }}
+                        className="flex flex-col items-center gap-3 rounded-lg border border-white/25 p-5 text-white transition hover:bg-white/10"
+                      >
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-8" fill={`#${siWhatsapp.hex}`}><path d={siWhatsapp.path} /></svg>
+                        <span className="text-xs uppercase tracking-[0.12em]">WhatsApp</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const subject = encodeURIComponent(`Project enquiry from ${contactEnquiry.name}`);
+                          const body = encodeURIComponent(`Hi!, i'm ${contactEnquiry.name}, i am looking for ${contactEnquiry.service} service and ${contactEnquiry.message}`);
+                          window.location.href = `mailto:noospace.in@gmail.com?subject=${subject}&body=${body}`;
+                          setContactEnquiry(null);
+                        }}
+                        className="flex flex-col items-center gap-3 rounded-lg border border-white/25 p-5 text-white transition hover:bg-white/10"
+                      >
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-8" fill={`#${siGmail.hex}`}><path d={siGmail.path} /></svg>
+                        <span className="text-xs uppercase tracking-[0.12em]">Email</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ), document.body)}
               <div className="mt-7 grid grid-cols-3 gap-3 border-t border-white/20 pt-5 text-[9px] uppercase tracking-[0.1em] text-white/70 sm:gap-8 sm:pt-6 sm:text-[10px]" style={{ fontFamily: "'Staravenue', sans-serif" }}>
                 <div>
                   <p className="mb-2 text-white/45">Instagram</p>
