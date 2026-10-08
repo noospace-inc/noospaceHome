@@ -6,9 +6,7 @@ const groups = [
     title: "Quick links",
     links: [
       { label: "Home", href: "/#home" },
-      { label: "Services", href: "/#services" },
       { label: "Projects", href: "/#projects" },
-      { label: "Contact", href: "/#contact" },
       { label: "Our process", href: "/#our-steps" },
       { label: "About us", href: "/#about" },
       { label: "FAQ", href: "/#faq" },
@@ -17,9 +15,9 @@ const groups = [
   {
     title: "Company",
     links: [
-      { label: "Services", href: "/#services" },
+      { label: "Services", href: "/#about" },
       { label: "Our work", href: "/#projects" },
-      { label: "Contact us", href: "/#contact" },
+      { label: "Contact us", href: "/#connectus" },
     ],
   },
   {
@@ -73,7 +71,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="flex flex-col gap-2 py-5 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
-          <span>© Noospace</span>
+          <span>© {new Date().getFullYear()} Noo Space. All rights reserved.</span>
           <span>Made for ideas with a little more space.</span>
         </div>
         <div aria-hidden="true" className="select-none whitespace-nowrap overflow-hidden bg-gradient-to-r from-[#35205f] via-[#b497ff] to-[#35205f] bg-clip-text text-center font-nasalization text-[clamp(3rem,13vw,11rem)] font-bold leading-[0.78] tracking-[-0.07em] text-transparent">
