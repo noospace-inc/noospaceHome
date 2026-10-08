@@ -27,9 +27,7 @@ export default function HeroSection() {
     });
   }, []);
 
-  // Force the page itself black — if a global stylesheet/layout has a grid or
-  // any other background on <html>/<body>, it can otherwise show through
-  // around this section. This guarantees it can't.
+
   useEffect(() => {
     const prevHtmlBg = document.documentElement.style.backgroundColor;
     const prevBodyBg = document.body.style.backgroundColor;

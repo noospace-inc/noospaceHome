@@ -316,7 +316,7 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
 /* Adjust these values to position each hero text element on mobile. */
 :root {
   --hero-mobile-noospace-y: 55px;
-  --hero-mobile-tagline-y: 170px;
+  --hero-mobile-tagline-y: 160px;
   --hero-mobile-slogan-y: 130px;
   --hero-mobile-subtitle-y: 135px;
   --hero-mobile-button-y: 115px;
@@ -328,7 +328,7 @@ html[data-intro-pending="true"] [aria-label="Hero section"] * {
   .hero-slogan { position: relative; top: var(--hero-mobile-slogan-y); }
   .hero-slogan-desktop { display: none; }
   .hero-slogan-mobile { display: flex; flex-direction: column; }
-  .hero-subtitle { position: relative; top: var(--hero-mobile-subtitle-y); }
+  .hero-subtitle { display: none; }
   .hero-cta-button { top: var(--hero-mobile-button-y); }
 }
 

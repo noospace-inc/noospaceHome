@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   description: "Noospace builds unique, secure and efficient custom software for businesses. Explore our services, see our projects, and contact us today.",
   alternates: { canonical: "/" },
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: { url: "/logo-fav.png", type: "image/png" },
+    shortcut: { url: "/logo-fav.png", type: "image/png" },
+    apple: { url: "/logo-fav.png", type: "image/png" },
   },
   openGraph: {
     title: "Noospace | Custom Software Development Services",
@@ -48,7 +48,7 @@ const structuredData = {
       "@type": "Organization",
       name: "Noospace",
       url: "https://noospace.in",
-      logo: "https://noospace.in/logo.png",
+      logo: "https://noospace.in/logo-fav.png",
       description: "Noospace builds unique, secure and efficient custom software for businesses.",
     },
     { "@type": "WebSite", name: "Noospace", url: "https://noospace.in" },
