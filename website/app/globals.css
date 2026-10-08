@@ -58,19 +58,8 @@ section :is(h1, h2, h3) {
   letter-spacing: 2px !important;
 }
 
-html[data-intro-pending="true"] {
-  overflow: hidden;
-  background: #000;
-}
-
-html[data-intro-pending="true"] body {
-  overflow: hidden;
-  background: #000;
-}
-
-html[data-intro-pending="true"] body > :not(.intro-screen) {
-  visibility: hidden;
-}
+html[data-intro-pending="true"] { background: #000; }
+html[data-intro-pending="true"] body { background: #000; }
 
 html[data-intro-pending="true"] [aria-label="Hero section"],
 html[data-intro-pending="true"] [aria-label="Hero section"] * {

@@ -152,7 +152,7 @@ export default function AboutSection() {
   return (
     <section ref={sectionRef} id="about" aria-label="About us" className="relative isolate min-h-screen w-full overflow-hidden bg-black px-4 py-12 text-white sm:px-7 lg:min-h-[760px] lg:px-10 lg:py-10">
       <header data-about-heading className="relative z-20 mx-auto mb-8 max-w-4xl text-center lg:mb-6">
-        <h1 data-section-shine className="relative -top-3 text-3xl leading-tight text-white sm:text-4xl lg:text-5xl" style={{ fontFamily: "Hatolie, sans-serif" }}>One Team. Every Digital Solution.</h1>
+        <h2 data-section-shine className="relative -top-3 text-3xl leading-tight text-white sm:text-4xl lg:text-5xl" style={{ fontFamily: "Hatolie, sans-serif" }}>One Team. Every Digital Solution.</h2>
         <p data-section-shine className="relative -top-8 mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-white/70 sm:text-base" style={{ fontFamily: "'Staravenue', sans-serif", letterSpacing: "0.02em" }}>We build, promote, and protect your business online so you can focus on running it.</p>
       </header>
       <div className="relative mx-auto grid min-h-[calc(100vh-11rem)] w-full max-w-[1700px] grid-cols-1 gap-5 xl:grid-cols-[minmax(260px,320px)_minmax(420px,1fr)_minmax(340px,410px)] xl:items-start xl:gap-6">

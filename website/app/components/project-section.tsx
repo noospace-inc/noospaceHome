@@ -9,12 +9,14 @@ export interface ProjectCardData {
   name: string;
   quote: string;
   description: string;
+  link: string;
   category: string;
   tag: string;
   coverImage: string;
   behindImage: string;
 }
 
+// TODO: Replace this portfolio data with the final approved project titles, descriptions, and links.
 export const PROJECT_CARDS: ProjectCardData[] = [
   {
     id: "tripfactory",
@@ -22,6 +24,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Move like water, keep the fire quiet.",
     description:
       "A destination-first travel experience that turns ambitious plans into seamless journeys.",
+    link: "#contact",
     category: "Travel & Hospitality",
     tag: "TRIPFACTORY",
     coverImage: "/projects/tripfactorycover.webp",
@@ -33,6 +36,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Stories that move fast, crafted for the modern reader.",
     description:
       "A high-performance digital newsroom engineered for instant updates and editorial gravity.",
+    link: "#contact",
     category: "Media & Journalism",
     tag: "TAMILAKA NEWS",
     coverImage: "/projects/tamilakanewsCover.webp",
@@ -44,6 +48,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Woven in heritage, tailored for contemporary elegance.",
     description:
       "A refined online storefront celebrating generational craftsmanship and artisanal beauty.",
+    link: "#contact",
     category: "Luxury E-Commerce",
     tag: "THARANI TEXTILES",
     coverImage: "/projects/tharanitextilesCover.webp",
@@ -55,6 +60,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Heritage textures presented through modern commerce.",
     description:
       "A digital flagship balancing tactile tradition with effortless navigation and checkout.",
+    link: "#contact",
     category: "Wholesale & Retail",
     tag: "SARAVANA TRADERS",
     coverImage: "/projects/SaravanaTextilesCover.webp",
@@ -66,6 +72,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Where academic vision and institutional grace unite.",
     description:
       "An inspiring educational portal showcasing courses, achievements, and future opportunities.",
+    link: "#contact",
     category: "Education & Institution",
     tag: "SRI VAARI",
     coverImage: "/projects/SrivariCover.webp",
@@ -77,6 +84,7 @@ export const PROJECT_CARDS: ProjectCardData[] = [
     quote: "Pure comfort engineered for restorative slumber.",
     description:
       "A confident digital storefront presenting luxury sleep systems and orthopedic innovations.",
+    link: "#contact",
     category: "Modern E-Commerce",
     tag: "MELLOSOFT",
     coverImage: "/projects/mellosoftCover.webp",
@@ -989,6 +997,16 @@ function ProjectCarousel({ revealProgress }: { revealProgress: number }) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 z-30 w-[clamp(28px,8vw,120px)] bg-gradient-to-l from-black via-black/65 to-transparent backdrop-blur-[3px]"
         />
+      </div>
+
+      <div className="mx-auto mt-12 grid w-full max-w-6xl gap-4 px-5 sm:grid-cols-2 lg:grid-cols-3">
+        {PROJECT_CARDS.map((project) => (
+          <article key={`summary-${project.id}`} className="rounded-2xl border border-violet-300/20 bg-white/[0.035] p-6 text-left">
+            <h3 className="text-xl text-[#f5b470]" style={{ fontFamily: "Hatolie, sans-serif" }}>{project.name}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-white/65">{project.description}</p>
+            <a className="mt-4 inline-flex text-sm text-violet-200 underline decoration-violet-200/50 underline-offset-4 hover:text-white" href={project.link}>Explore this project</a>
+          </article>
+        ))}
       </div>
 
 

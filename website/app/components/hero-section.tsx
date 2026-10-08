@@ -220,16 +220,16 @@ export default function HeroSection() {
         style={{ zIndex: 20, animation: "hero-fade-up 1.2s cubic-bezier(0.2, 0.75, 0.25, 1) both" }}
       >
         <nav className="flex items-center gap-3 text-[11px] text-white/75 md:gap-6 md:text-[13px] md:text-white/60">
+          <a href="#home" className="transition-colors hover:text-white">Home</a>
+          <a href="#services" className="transition-colors hover:text-white">Services</a>
           <a href="#projects" className="hidden transition-colors hover:text-white md:inline">Projects</a>
-          <a href="#about" className="transition-colors hover:text-white">About Us</a>
-          <a href="#connectus" className="hidden transition-colors hover:text-white md:inline">Contact Us</a>
-          <a href="#about" className="transition-colors hover:text-white">Services</a>
+          <a href="#contact" className="hidden transition-colors hover:text-white md:inline">Contact</a>
         </nav>
 
         <div className="flex items-center gap-4 text-[13px] text-white/50">
 
           <a
-            href="#connectus"
+            href="#contact"
             className="relative flex items-center gap-1 overflow-hidden rounded-full px-2.5 py-1.5 text-[11px] text-white/90 md:gap-1.5 md:px-4 md:py-2 md:text-[13px]"
             style={{
               backgroundImage:
@@ -257,6 +257,7 @@ export default function HeroSection() {
         className="relative flex flex-1 flex-col items-center justify-center px-6 text-center"
         style={{ zIndex: 20 }}
       >
+        <h1 className="sr-only">Noospace – Custom Software Development Services</h1>
         <div
           className="hero-tagline mb-0 flex items-center gap-0 text-white"
           style={{ fontFamily: "Hatolie, sans-serif", fontSize: "clamp(28px, 2.7vw, 40px)", textShadow: "0 2px 18px rgba(0,0,0,0.85)", transform: "translateY(-150px)" }}

@@ -15,12 +15,44 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Noospace",
-  description: "Noospace digital solutions.",
+  metadataBase: new URL("https://noospace.in"),
+  title: "Noospace | Custom Software Development Services",
+  description: "Noospace builds unique, secure and efficient custom software for businesses. Explore our services, see our projects, and contact us today.",
+  alternates: { canonical: "/" },
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
+    apple: "/logo.png",
   },
+  openGraph: {
+    title: "Noospace | Custom Software Development Services",
+    description: "Noospace builds unique, secure and efficient custom software for businesses. Explore our services, see our projects, and contact us today.",
+    url: "https://noospace.in/",
+    siteName: "Noospace",
+    type: "website",
+    images: [{ url: "/logo.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Noospace | Custom Software Development Services",
+    description: "Noospace builds unique, secure and efficient custom software for businesses. Explore our services, see our projects, and contact us today.",
+    images: ["/logo.png"],
+  },
+  robots: { index: true, follow: true },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Noospace",
+      url: "https://noospace.in",
+      logo: "https://noospace.in/logo.png",
+      description: "Noospace builds unique, secure and efficient custom software for businesses.",
+    },
+    { "@type": "WebSite", name: "Noospace", url: "https://noospace.in" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -31,6 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
         <IntroLoadingScreen />
         {children}
       </body>
